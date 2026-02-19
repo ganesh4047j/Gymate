@@ -1,22 +1,95 @@
-import React from 'react';
+import React, { useState } from "react";
 
 interface FooterProps {
   onNavigate: (page: string, params?: any) => void;
-  onOpenModal: (type: string) => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenModal }) => {
+// Optimized Modal Component with better content handling
+const SupportModal = ({
+  title,
+  content,
+  onClose,
+}: {
+  title: string;
+  content: string;
+  onClose: () => void;
+}) => (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md transition-all">
+    <div className="bg-[#0A0A0A] border border-[#FFD700]/30 w-full max-w-2xl max-h-[85vh] flex flex-col rounded-sm shadow-[0_0_100px_rgba(0,0,0,1)]">
+      <div className="p-6 border-b border-white/10 flex justify-between items-center">
+        <h3 className="font-display font-black text-xl text-[#FFD700] uppercase italic tracking-widest">
+          {title}
+        </h3>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-white text-3xl transition-colors"
+        >
+          &times;
+        </button>
+      </div>
+      <div className="p-8 overflow-y-auto text-gray-400 text-sm leading-relaxed space-y-6 font-sans">
+        {content ? (
+          content
+            .split("\n\n")
+            .map((paragraph, i) => <p key={i}>{paragraph}</p>)
+        ) : (
+          <p className="italic">
+            Content is being updated by the Gymate Team...
+          </p>
+        )}
+      </div>
+      <div className="p-6 border-t border-white/5 flex justify-end">
+        <button
+          onClick={onClose}
+          className="bg-[#FFD700] text-black px-10 py-3 text-xs font-black uppercase tracking-widest hover:bg-white transition-all"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+  // Extended state to handle all footer modal types
+  const [activeModal, setActiveModal] = useState<
+    "tos" | "privacy" | "shipping" | "returns" | "help" | null
+  >(null);
+
+  const sectionHeadingStyle =
+    "text-white font-black text-[10px] uppercase tracking-[0.3em] mb-8";
+  const linkStyle =
+    "text-gray-500 hover:text-[#FFD700] transition-colors duration-300 text-xs uppercase tracking-widest block w-fit text-left";
+
+  // Content Mapping
+  const modalContent = {
+    tos: `1. ACCEPTANCE OF TERMS\n\nBy accessing Gymate, you agree to be bound by these Terms. All equipment is intended for fitness use by adults.\n\n2. LIABILITY\n\nGymate is not responsible for injuries sustained during training. Always consult a professional before using high-resistance cable machines.`,
+    privacy: `1. DATA PROTECTION\n\nWe encrypt all personal data. Your shipping address is shared only with elite logistics partners for order fulfillment.\n\n2. COMMUNICATION\n\nWe only send 'New Drop' alerts if you opted in during registration.`,
+    shipping: `ORDER TRACKING & LOGISTICS\n\nOnce your order is processed, you will receive a unique tracking ID via email.\n\nStandard elite shipping takes 7-15 business days. For real-time updates, please enter your ID in our global partner portal (Link provided in email).`,
+    returns: `RETURN POLICY\n\nWe stand by our gear. If your equipment arrives with defects, we offer a 30-day "No-Questions" replacement policy.\n\nItems must be in original Gymate packaging to qualify for a full refund.`,
+    help: `GYMATE HELP CENTER\n\nNeed assistance with assembly? Our technical team is available 24/7 for hardware support.\n\nEmail: support@gymate.com\nResponse time: Under 12 hours.`,
+  };
+
   return (
-    <footer className="bg-black border-t border-white/10 pt-20 pb-10">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col lg:flex-row justify-between gap-12 mb-16">
-          <div className="lg:w-1/3">
-            <div onClick={() => onNavigate('home')} className="flex items-center gap-2 mb-6 group cursor-pointer w-fit">
-              <span className="material-symbols-outlined text-primary text-3xl group-hover:rotate-12 transition-transform">fitness_center</span>
-              <h2 className="font-display font-black text-2xl tracking-tighter uppercase italic text-white">Gymate</h2>
+    <footer className="bg-black border-t border-white/5 pt-24 pb-12">
+      <div className="max-w-[1440px] mx-auto px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-20">
+          {/* Brand Identity */}
+          <div className="lg:col-span-4">
+            <div
+              onClick={() => onNavigate("home")}
+              className="flex items-center gap-2 mb-8 group cursor-pointer w-fit"
+            >
+              <span className="material-symbols-outlined text-[#FFD700] text-3xl group-hover:rotate-12 transition-transform duration-500">
+                bolt
+              </span>
+              <h2 className="font-display font-black text-3xl tracking-tighter uppercase italic text-white">
+                Gy<span className="text-[#FFD700]">mate</span>
+              </h2>
             </div>
-            <p className="text-text-muted mb-6 leading-relaxed">
-              Defining the standard for elite fitness equipment. We engineer gear for those who refuse to settle for average.
+            <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-sm uppercase tracking-tighter">
+              Defining the standard for elite fitness. No compromises. No
+              excuses.
             </p>
             <div className="flex gap-4">
               <a href="#" className="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-white hover:bg-primary hover:text-black transition-colors">
@@ -28,49 +101,109 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenModal }) => {
             </div>
           </div>
 
-          <div className="lg:w-2/3 flex flex-col md:flex-row gap-12 justify-between">
-            <div className="grid grid-cols-2 gap-12">
-              <div>
-                <h4 className="text-white font-bold uppercase tracking-wider mb-6">Shop</h4>
-                <ul className="space-y-4 text-text-muted text-sm cursor-pointer">
-                  <li><button onClick={() => onNavigate('shop', { filter: 'new' })} className="hover:text-primary transition-colors">New Arrivals</button></li>
-                  <li><button onClick={() => onNavigate('shop', { filter: 'best-sellers' })} className="hover:text-primary transition-colors">Best Sellers</button></li>
-                  <li><button onClick={() => onNavigate('shop', { filter: 'accessories' })} className="hover:text-primary transition-colors">Accessories</button></li>
-                  <li><button onClick={() => onNavigate('shop', { filter: 'gift-card' })} className="hover:text-primary transition-colors">Gift Cards</button></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-white font-bold uppercase tracking-wider mb-6">Support</h4>
-                <ul className="space-y-4 text-text-muted text-sm cursor-pointer">
-                  <li><button onClick={() => onOpenModal('help')} className="hover:text-primary transition-colors">Help Center</button></li>
-                  <li><button onClick={() => onOpenModal('returns')} className="hover:text-primary transition-colors">Returns</button></li>
-                  <li><button onClick={() => onOpenModal('warranty')} className="hover:text-primary transition-colors">Warranty</button></li>
-                  <li><button onClick={() => onOpenModal('contact')} className="hover:text-primary transition-colors">Contact Us</button></li>
-                </ul>
-              </div>
-            </div>
+          {/* Corrected Navigation Columns */}
+          <div className="lg:col-span-2">
+            <h4 className={sectionHeadingStyle}>Explore</h4>
+            <nav className="space-y-4">
+              <button onClick={() => onNavigate("shop")} className={linkStyle}>
+                New Drops
+              </button>
+              <button onClick={() => onNavigate("shop")} className={linkStyle}>
+                Best Sellers
+              </button>
+              <button onClick={() => onNavigate("about")} className={linkStyle}>
+                Performance
+              </button>
+            </nav>
+          </div>
 
-            <div className="md:w-1/2 bg-surface-dark p-8 rounded-lg border border-white/5 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
-              <h4 className="text-primary font-bold uppercase tracking-wider mb-2 relative z-10">Equip Your Gym</h4>
-              <p className="text-gray-300 text-sm mb-4 relative z-10">
-                Looking to outfit a commercial facility? We offer bulk pricing and custom branding for elite gyms.
+          <div className="lg:col-span-2">
+            <h4 className={sectionHeadingStyle}>Support</h4>
+            <nav className="space-y-4">
+              <button
+                onClick={() => setActiveModal("help")}
+                className={linkStyle}
+              >
+                Help Center
+              </button>
+              <button
+                onClick={() => setActiveModal("shipping")}
+                className={linkStyle}
+              >
+                Track Order
+              </button>
+              <button
+                onClick={() => setActiveModal("returns")}
+                className={linkStyle}
+              >
+                Return Portal
+              </button>
+            </nav>
+          </div>
+
+          {/* Partnership CTA */}
+          <div className="lg:col-span-4">
+            <div className="bg-[#111111] p-8 border border-white/5 relative group overflow-hidden">
+              <h4 className="text-[#FFD700] font-black uppercase text-xs tracking-[0.2em] mb-4">
+                Commercial Bulk
+              </h4>
+              <p className="text-gray-400 text-xs mb-6 leading-relaxed">
+                Outfit your fitness center with Gymate equipment. Custom
+                branding available for high-end facilities.
               </p>
-              <button onClick={() => onOpenModal('contact')} className="flex items-center gap-2 text-white font-bold uppercase text-xs tracking-widest relative z-10 group-hover:text-primary transition-colors">
-                Contact Sales <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              <button
+                onClick={() => setActiveModal("help")}
+                className="flex items-center gap-2 text-white font-black uppercase text-[10px] tracking-widest group/btn"
+              >
+                Inquire Now{" "}
+                <span className="material-symbols-outlined text-sm text-[#FFD700] transition-transform group-hover/btn:translate-x-2">
+                  arrow_forward
+                </span>
               </button>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-text-muted">
-          <p>&copy; 2023 Gymate Inc. All rights reserved.</p>
-          <div className="flex gap-6">
-            <button onClick={() => onOpenModal('privacy')} className="hover:text-white transition-colors">Privacy Policy</button>
-            <button onClick={() => onOpenModal('terms')} className="hover:text-white transition-colors">Terms of Service</button>
+        {/* Footer Legal Row */}
+        <div className="border-t border-white/5 pt-12 flex flex-col md:flex-row justify-between items-center gap-8">
+          <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em]">
+            &copy; {new Date().getFullYear()} Gymate Performance Inc.
+          </p>
+          <div className="flex gap-8">
+            <button
+              onClick={() => setActiveModal("privacy")}
+              className="text-[10px] text-gray-600 hover:text-[#FFD700] uppercase tracking-[0.2em]"
+            >
+              Privacy Policy
+            </button>
+            <button
+              onClick={() => setActiveModal("tos")}
+              className="text-[10px] text-gray-600 hover:text-[#FFD700] uppercase tracking-[0.2em]"
+            >
+              Terms of Service
+            </button>
           </div>
         </div>
       </div>
+
+      {/* DYNAMIC MODAL RENDERER */}
+      {activeModal && (
+        <SupportModal
+          title={
+            activeModal === "tos"
+              ? "Terms of Service"
+              : activeModal === "privacy"
+                ? "Privacy Policy"
+                : activeModal === "shipping"
+                  ? "Track Your Order"
+                  : activeModal === "returns"
+                    ? "Return Policy"
+                    : "Help Center"
+          }
+          content={modalContent[activeModal]}
+          onClose={() => setActiveModal(null)}
+        />
+      )}
     </footer>
   );
 };

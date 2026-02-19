@@ -1,40 +1,121 @@
-import React from 'react';
+import React from "react";
 
 interface LookbookProps {
   onNavigate: (page: string) => void;
 }
 
 export const Lookbook: React.FC<LookbookProps> = ({ onNavigate }) => {
-  const images = [
-    "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=600",
-    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600",
-    "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=600",
-    "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=600",
-    "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&q=80&w=600",
-    "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&q=80&w=600",
+  // Curated high-performance imagery aligned with your 5 core products
+  const lookbookItems = [
+    {
+      src: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=800",
+      title: "Core Stability",
+      tag: "Titan Lever Belt",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=800",
+      title: "Precision Recovery",
+      tag: "Massage Gun V2",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=800",
+      title: "Grip Mastery",
+      tag: "Padded Wrist Wraps",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?auto=format&fit=crop&q=80&w=800",
+      title: "Calisthenics Elite",
+      tag: "Apex Pull-Up Tower",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&q=80&w=800",
+      title: "Mobile Tension",
+      tag: "Portable Cable Machine",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&q=80&w=800",
+      title: "The Standard",
+      tag: "Gymate Performance Gear",
+    },
   ];
 
+  const sectionLabel =
+    "text-[#FFD700] text-[10px] font-black uppercase tracking-[0.4em] mb-4 block";
+
   return (
-    <div className="pt-24 pb-12 px-6 max-w-[1600px] mx-auto">
-      <div className="text-center mb-12">
-        <h2 className="font-display font-black text-5xl text-white uppercase italic">The Collection</h2>
-        <p className="text-text-muted mt-2">Visualizing dominance in every frame.</p>
-      </div>
-      
-      <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-        {images.map((src, idx) => (
-          <div key={idx} className="relative group overflow-hidden rounded-lg break-inside-avoid">
-             <img src={src} alt={`Lookbook ${idx}`} className="w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-               <button 
-                  onClick={() => onNavigate('shop')}
-                  className="px-6 py-2 bg-white text-black font-bold uppercase tracking-wider hover:bg-primary transition-colors"
-               >
-                 Shop This Look
-               </button>
-             </div>
+    <div className="bg-black min-h-screen pt-40 pb-20 px-8">
+      <div className="max-w-[1440px] mx-auto">
+        {/* EDITORIAL HEADER */}
+        <div className="text-center mb-24 animate-fade-in">
+          <span className={sectionLabel}>Visual Manifest // 2026</span>
+          <h2 className="font-display font-black text-6xl md:text-8xl lg:text-9xl text-white uppercase italic tracking-tighter leading-[0.85] mb-8">
+            THE{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FFD700] to-[#B8860B]">
+              ELITE
+            </span>{" "}
+            <br /> COLLECTION
+          </h2>
+          <p className="text-gray-500 max-w-xl mx-auto text-xs uppercase tracking-[0.3em] leading-relaxed">
+            Visualizing dominance in every frame. See our engineered gear in the
+            hands of the 1%.
+          </p>
+        </div>
+
+        {/* MASONRY GRID */}
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+          {lookbookItems.map((item, idx) => (
+            <div
+              key={idx}
+              className="relative group overflow-hidden break-inside-avoid border border-white/5 bg-[#111111]"
+            >
+              {/* IMAGE */}
+              <img
+                src={item.src}
+                alt={item.title}
+                className="w-full grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
+              />
+
+              {/* INTERACTIVE OVERLAY */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
+                {/* Content Animation */}
+                <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                  <span className="text-[#FFD700] text-[9px] font-black uppercase tracking-[0.4em] mb-2 block">
+                    {item.tag}
+                  </span>
+                  <h3 className="text-white font-display font-black text-2xl uppercase italic tracking-tighter mb-6">
+                    {item.title}
+                  </h3>
+
+                  <button
+                    onClick={() => onNavigate("shop")}
+                    className="flex items-center gap-3 text-white text-[10px] font-black uppercase tracking-[0.2em] group/btn"
+                  >
+                    <span className="bg-[#FFD700] h-[1px] w-8 group-hover/btn:w-12 transition-all"></span>
+                    Shop This Look
+                  </button>
+                </div>
+              </div>
+
+              {/* Decorative Corner (Only visible on hover) */}
+              <div className="absolute top-0 right-0 w-12 h-12 border-t border-r border-[#FFD700] opacity-0 group-hover:opacity-100 transition-opacity duration-700 m-4"></div>
+            </div>
+          ))}
+        </div>
+
+        {/* BOTTOM CTA */}
+        <div className="mt-32 text-center">
+          <div className="inline-flex flex-col items-center">
+            <p className="text-gray-600 text-[10px] uppercase tracking-[0.5em] mb-8">
+              End of Collection
+            </p>
+            <button
+              onClick={() => onNavigate("shop")}
+              className="bg-[#FFD700] text-black px-12 py-5 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-white transition-all transform hover:scale-105 active:scale-95 shadow-xl shadow-[#FFD700]/10"
+            >
+              Back To Performance Shop
+            </button>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

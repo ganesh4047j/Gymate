@@ -1,145 +1,225 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from "react";
 
 interface ScienceModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const ScienceModal: React.FC<ScienceModalProps> = ({ isOpen, onClose }) => {
+export const ScienceModal: React.FC<ScienceModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
-    return () => { document.body.style.overflow = 'unset'; };
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
+  const sectionLabel =
+    "text-[#FFD700] text-[10px] font-black uppercase tracking-[0.4em] mb-4 block";
+  const techValueStyle =
+    "text-white font-mono text-sm font-bold italic tracking-tighter";
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={onClose}></div>
-      
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-         <img 
-            src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=300" 
-            className="absolute top-[10%] left-[5%] w-32 h-32 md:w-64 md:h-64 object-cover rounded-full opacity-20 animate-float mix-blend-screen grayscale"
-            style={{animationDelay: '0s', animationDuration: '8s'}}
-         />
-         <img 
-            src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=300" 
-            className="absolute bottom-[10%] right-[5%] w-40 h-40 md:w-80 md:h-80 object-cover opacity-10 animate-float mix-blend-screen grayscale"
-            style={{animationDelay: '2s', animationDuration: '10s'}}
-         />
-         <div 
-            className="absolute top-[40%] right-[15%] w-20 h-20 md:w-40 md:h-40 border-4 border-primary/30 rounded-full opacity-30 animate-float"
-            style={{animationDelay: '1s', animationDuration: '6s'}}
-         ></div>
+    <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 md:p-8">
+      {/* Immersive Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/95 backdrop-blur-2xl animate-fade-in"
+        onClick={onClose}
+      ></div>
+
+      {/* Floating UI Accents */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+        <div className="absolute top-1/4 left-10 w-64 h-64 bg-[#FFD700]/10 rounded-full blur-[100px] animate-pulse"></div>
+        <div
+          className="absolute bottom-1/4 right-10 w-96 h-96 bg-[#FFD700]/5 rounded-full blur-[120px] animate-pulse"
+          style={{ animationDelay: "2s" }}
+        ></div>
       </div>
 
-      <div className="relative bg-[#0F0F0F] border border-white/10 rounded-2xl max-w-5xl w-full max-h-[85vh] shadow-[0_0_100px_rgba(255,217,0,0.15)] flex flex-col z-10 overflow-hidden">
-        
-        <div className="flex justify-between items-center p-6 md:p-8 border-b border-white/5 bg-[#0F0F0F]/80 backdrop-blur-md sticky top-0 z-20">
-          <div className="flex items-center gap-3">
-             <div className="bg-primary/20 p-2 rounded-lg">
-                <span className="material-symbols-outlined text-primary text-2xl">science</span>
-             </div>
-             <div>
-                <h3 className="font-display font-black text-xl md:text-3xl text-white uppercase italic tracking-tighter">Gymate Lab</h3>
-                <p className="text-xs text-text-muted uppercase tracking-widest">R&D Division</p>
-             </div>
+      <div
+        ref={modalRef}
+        className="relative bg-[#0A0A0A] border border-white/10 rounded-sm max-w-6xl w-full max-h-[90vh] shadow-[0_0_100px_rgba(0,0,0,1)] flex flex-col z-10 overflow-hidden animate-[fade-in-up_0.5s_ease-out]"
+      >
+        {/* HEADER: Lab Identity */}
+        <div className="flex justify-between items-center p-6 md:p-10 border-b border-white/5 bg-[#0A0A0A] sticky top-0 z-30">
+          <div className="flex items-center gap-4">
+            <div className="bg-[#FFD700] p-2 rounded-sm">
+              <span className="material-symbols-outlined text-black text-2xl font-bold">
+                biotech
+              </span>
+            </div>
+            <div>
+              <h3 className="font-display font-black text-2xl md:text-4xl text-white uppercase italic tracking-tighter leading-none">
+                GYMATE <span className="text-[#FFD700]">LABS</span>
+              </h3>
+              <p className="text-[9px] text-gray-500 uppercase tracking-[0.4em] mt-1">
+                Technical Research & Development // Ref. 2026-X
+              </p>
+            </div>
           </div>
-          <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors border border-white/5">
-            <span className="material-symbols-outlined">close</span>
+          <button
+            onClick={onClose}
+            className="group flex items-center gap-3 text-gray-500 hover:text-white transition-all"
+          >
+            <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+              Close Esc
+            </span>
+            <span className="material-symbols-outlined text-3xl">close</span>
           </button>
         </div>
-        
-        <div className="overflow-y-auto custom-scrollbar p-6 md:p-12 space-y-16">
-           
-           <div className="flex flex-col md:flex-row gap-12 items-center">
-             <div className="flex-1 space-y-4">
-               <div className="text-primary font-mono text-sm mb-2">01. BIOMECHANICS</div>
-               <h4 className="font-display font-bold text-3xl md:text-4xl text-white uppercase">Anatomy Driven Design</h4>
-               <p className="text-gray-400 leading-relaxed text-lg">
-                 We utilize 3D motion capture technology to analyze the force vectors during compound movements. Every curve in our equipment is calculated to optimize joint articulation, reducing shear force while maximizing muscle recruitment.
-               </p>
-               <ul className="space-y-2 mt-4 text-gray-300">
-                  <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 bg-primary rounded-full"></span>Optimized Heel Pitch for Squat Depth</li>
-                  <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 bg-primary rounded-full"></span>Metatarsal Flex Grooves</li>
-                  <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 bg-primary rounded-full"></span>Lateral Stability Walls</li>
-               </ul>
-             </div>
-             <div className="w-full md:w-1/2 aspect-video bg-gradient-to-br from-gray-900 to-black rounded-xl border border-white/10 p-1 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1574680096141-1cddd32e38e1?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center opacity-40 group-hover:scale-105 transition-transform duration-700"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                   <div className="w-3/4 h-3/4 border border-primary/30 rounded-lg relative">
-                      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-primary"></div>
-                      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-primary"></div>
-                      <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-primary"></div>
-                      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-primary"></div>
-                      <div className="absolute inset-0 flex items-center justify-center text-primary/80 font-mono text-xs">ANALYZING VECTORS...</div>
-                   </div>
-                </div>
-             </div>
-           </div>
 
-           <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-
-           <div className="flex flex-col md:flex-row-reverse gap-12 items-center">
-             <div className="flex-1 space-y-4">
-               <div className="text-primary font-mono text-sm mb-2">02. MATERIALS</div>
-               <h4 className="font-display font-bold text-3xl md:text-4xl text-white uppercase">Aerospace Grade Composites</h4>
-               <p className="text-gray-400 leading-relaxed text-lg">
-                 Our Titan-Grip material isn't just leather; it's a proprietary composite compressed under 50 tons of pressure. This increases density by 40% without adding bulk, providing the intra-abdominal pressure support of a 13mm belt in a 10mm profile.
-               </p>
-             </div>
-             <div className="w-full md:w-1/2 aspect-video bg-surface-dark rounded-xl border border-white/10 relative overflow-hidden flex items-center justify-center p-8">
-                <div className="w-full h-full flex items-end gap-2 relative z-10">
-                   <div className="w-1/4 bg-white/10 h-[40%] rounded-t relative group">
-                      <div className="absolute -top-6 w-full text-center text-xs text-gray-500">Standard</div>
-                   </div>
-                   <div className="w-1/4 bg-white/20 h-[60%] rounded-t relative group">
-                      <div className="absolute -top-6 w-full text-center text-xs text-gray-500">Premium</div>
-                   </div>
-                   <div className="w-1/4 bg-primary h-[90%] rounded-t relative group shadow-[0_0_20px_rgba(255,217,0,0.3)]">
-                      <div className="absolute -top-6 w-full text-center text-xs text-primary font-bold">Gymate</div>
-                   </div>
+        {/* SCROLLABLE CONTENT */}
+        <div className="overflow-y-auto custom-scrollbar p-6 md:p-16 space-y-24">
+          {/* SECTION 1: BIOMECHANICS */}
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-6">
+              <span className={sectionLabel}>01. Structural Analysis</span>
+              <h4 className="font-display font-black text-4xl text-white uppercase italic tracking-tighter leading-tight">
+                ANATOMY-DRIVEN <br /> FORCE VECTORS
+              </h4>
+              <p className="text-gray-500 leading-relaxed text-sm uppercase tracking-wide">
+                Using 3D motion capture and EMG telemetry, we analyze muscle
+                recruitment patterns across elite athletes. Our equipment is
+                architected to align with natural joint articulation, shifting
+                stress from connective tissue to the target muscle group.
+              </p>
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <div className="p-4 bg-white/5 border-l-2 border-[#FFD700]">
+                  <p className="text-[9px] text-gray-600 font-black uppercase mb-1">
+                    Max Load Stability
+                  </p>
+                  <span className={techValueStyle}>+42.5% Recruitment</span>
                 </div>
-                <div className="absolute inset-0 grid grid-rows-4 w-full h-full pointer-events-none">
-                   <div className="border-t border-white/5 w-full"></div>
-                   <div className="border-t border-white/5 w-full"></div>
-                   <div className="border-t border-white/5 w-full"></div>
+                <div className="p-4 bg-white/5 border-l-2 border-[#FFD700]">
+                  <p className="text-[9px] text-gray-600 font-black uppercase mb-1">
+                    Joint Shear Reduction
+                  </p>
+                  <span className={techValueStyle}>-18% Stress Ratio</span>
                 </div>
-             </div>
-           </div>
+              </div>
+            </div>
 
-           <div className="bg-gradient-to-r from-surface-dark to-black p-8 rounded-xl border border-white/10 relative overflow-hidden">
-             <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
-               <div>
-                  <h4 className="text-white font-bold text-2xl mb-2">Tested Beyond Failure</h4>
-                  <p className="text-gray-400 text-sm max-w-lg">We spent 2,000+ hours in R&D and stress-test every prototype to 150% of its rated capacity before shipping.</p>
-               </div>
-               <div className="flex gap-8">
-                  <div className="text-center">
-                     <div className="text-3xl font-black text-primary font-display">2k+</div>
-                     <div className="text-[10px] uppercase text-gray-500 tracking-wider">Hours R&D</div>
+            {/* Visual Blueprint */}
+            <div className="relative aspect-video bg-[#111111] border border-white/5 flex items-center justify-center group overflow-hidden">
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1200')] bg-cover bg-center opacity-20 grayscale transition-transform duration-700 group-hover:scale-110"></div>
+              <div className="relative z-10 w-full h-full p-8 flex flex-col justify-center">
+                <div className="border border-[#FFD700]/30 w-full h-full relative animate-pulse">
+                  <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FFD700]"></div>
+                  <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FFD700]"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <span className="material-symbols-outlined text-[#FFD700] text-5xl mb-2">
+                        monitoring
+                      </span>
+                      <p className="text-[10px] text-[#FFD700] font-black uppercase tracking-[0.3em]">
+                        Mapping Kinetic Flow
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                     <div className="text-3xl font-black text-primary font-display">150%</div>
-                     <div className="text-[10px] uppercase text-gray-500 tracking-wider">Stress Rating</div>
-                  </div>
-               </div>
-             </div>
-           </div>
+                </div>
+              </div>
+              {/* Scanning Line Effect */}
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-[#FFD700] shadow-[0_0_15px_#FFD700] animate-[scan_4s_linear_infinite] z-20"></div>
+            </div>
+          </div>
 
+          {/* SECTION 2: MATERIALS SCIENCE */}
+          <div className="grid lg:grid-cols-2 gap-16 items-center lg:flex-row-reverse">
+            <div className="lg:order-2 space-y-6">
+              <span className={sectionLabel}>02. Material Composition</span>
+              <h4 className="font-display font-black text-4xl text-white uppercase italic tracking-tighter leading-tight">
+                TITAN-GRIP <br /> COMPOSITE TECH
+              </h4>
+              <p className="text-gray-500 leading-relaxed text-sm uppercase tracking-wide">
+                Our <span className="text-white">Titan Lever Belts</span>{" "}
+                utilize a proprietary 13mm high-density suede composite. It
+                provides the rigid intra-abdominal pressure required for 800lb+
+                loads while maintaining a "break-in" feel out of the box.
+              </p>
+
+              {/* Comparison Table */}
+              <div className="bg-[#050505] border border-white/5 rounded-sm overflow-hidden">
+                <div className="grid grid-cols-3 p-3 bg-white/5 text-[9px] font-black uppercase tracking-widest text-gray-500">
+                  <div>Attribute</div>
+                  <div className="text-center">Standard</div>
+                  <div className="text-right text-[#FFD700]">Gymate Elite</div>
+                </div>
+                {[
+                  { label: "Tensile Strength", std: "400kg", gym: "1200kg+" },
+                  { label: "Friction Coeff.", std: "0.45μ", gym: "0.88μ" },
+                  { label: "Memory Retention", std: "65%", gym: "99.2%" },
+                ].map((row, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-3 p-4 border-t border-white/5 text-[10px] font-bold uppercase tracking-wider"
+                  >
+                    <div className="text-gray-400">{row.label}</div>
+                    <div className="text-center text-gray-600">{row.std}</div>
+                    <div className="text-right text-white italic">
+                      {row.gym}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Interactive Graph Area */}
+            <div className="lg:order-1 aspect-square bg-[#050505] border border-white/5 p-12 flex flex-col justify-between">
+              <div className="space-y-8">
+                {[
+                  {
+                    label: "Structural Integrity",
+                    val: "100%",
+                    color: "#FFD700",
+                  },
+                  { label: "Load Distribution", val: "98%", color: "#FFD700" },
+                  { label: "Wear Resistance", val: "95%", color: "#444" },
+                ].map((bar, i) => (
+                  <div key={i}>
+                    <div className="flex justify-between text-[9px] font-black uppercase tracking-widest mb-2">
+                      <span className="text-gray-500">{bar.label}</span>
+                      <span className="text-white">{bar.val}</span>
+                    </div>
+                    <div className="h-[2px] w-full bg-white/5">
+                      <div
+                        className="h-full bg-[#FFD700] shadow-[0_0_10px_rgba(255,215,0,0.5)] transition-all duration-1000"
+                        style={{ width: bar.val }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="text-center">
+                <p className="text-[9px] text-gray-700 uppercase tracking-[0.5em]">
+                  Global Benchmarking Status: OPTIMIZED
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div className="p-6 border-t border-white/10 bg-[#0F0F0F]/95 backdrop-blur flex justify-between items-center sticky bottom-0 z-20">
-           <span className="text-xs text-gray-500 font-mono">LAB_REF: 2023-QC-A</span>
-           <button onClick={onClose} className="text-sm font-bold text-white hover:text-primary transition-colors uppercase tracking-widest">
-              Close Report
-           </button>
+
+        {/* FOOTER: Meta Data */}
+        <div className="p-6 border-t border-white/5 bg-[#0A0A0A] flex justify-between items-center z-30">
+          <span className="text-[9px] text-gray-700 font-mono tracking-widest uppercase">
+            Encryption Status: SECURE // Gymate_RD_Division
+          </span>
+          <div className="flex gap-4 opacity-30 grayscale">
+            <span className="material-symbols-outlined text-sm">verified</span>
+            <span className="material-symbols-outlined text-sm">
+              precision_manufacturing
+            </span>
+            <span className="material-symbols-outlined text-sm">shield</span>
+          </div>
         </div>
       </div>
     </div>

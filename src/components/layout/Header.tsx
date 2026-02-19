@@ -1,75 +1,227 @@
-import React, { useState } from 'react';
-import { User } from '../../types';
+import React, { useState, useEffect, useRef } from "react";
+import { User } from "../../types";
 
 interface HeaderProps {
   onNavigate: (page: string, params?: any) => void;
-  onOpenSearch: () => void;
+  onSearch: (query: string) => void; // Changed from onOpenSearch
   onOpenProfile: () => void;
   cartCount: number;
   user: User | null;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenSearch, onOpenProfile, cartCount, user }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onNavigate,
+  onSearch,
+  onOpenProfile,
+  cartCount,
+  user,
+}) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Focus input when search is activated
+  useEffect(() => {
+    if (isSearchActive) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchActive]);
 
   const handleNav = (page: string) => {
     onNavigate(page);
     setIsMobileMenuOpen(false);
+    setIsSearchActive(false);
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      onSearch(searchQuery);
+      setIsSearchActive(false);
+      setSearchQuery("");
+    }
+  };
+
+  const navLinkStyle =
+    "relative text-[11px] font-black uppercase tracking-[0.2em] text-gray-300 hover:text-[#FFD700] transition-all duration-300 after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-[#FFD700] after:transition-all hover:after:w-full";
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-primary/30 glass-header transition-all duration-300">
-      <div className="max-w-[1440px] mx-auto px-6 h-20 flex items-center justify-between relative">
-        <button 
-          className="lg:hidden text-white hover:text-primary transition-colors z-20"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+    <header
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
+        isScrolled
+          ? "h-16 bg-black/95 backdrop-blur-md border-b border-[#FFD700]/20"
+          : "h-24 bg-transparent border-b border-white/5"
+      }`}
+    >
+      <div className="max-w-[1440px] mx-auto px-8 h-full flex items-center justify-between relative">
+        {/* LEFT SECTION: Nav Links (Hidden when searching) */}
+        <div
+          className={`flex-1 flex items-center transition-all duration-300 ${isSearchActive ? "opacity-0 invisible w-0" : "opacity-100 visible"}`}
         >
-          <span className="material-symbols-outlined text-3xl">menu</span>
-        </button>
-
-        <nav className="hidden lg:flex items-center gap-8">
-          <button onClick={() => handleNav('home')} className="text-sm font-medium uppercase tracking-widest hover:text-primary transition-colors">Home</button>
-          <button onClick={() => handleNav('shop')} className="text-sm font-medium uppercase tracking-widest hover:text-primary transition-colors">Shop</button>
-          <button onClick={() => handleNav('about')} className="text-sm font-medium uppercase tracking-widest hover:text-primary transition-colors">About</button>
-        </nav>
-
-        <button onClick={() => handleNav('home')} className="flex items-center gap-2 group absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-          <span className="material-symbols-outlined text-primary text-3xl group-hover:rotate-12 transition-transform duration-300">fitness_center</span>
-          <h1 className="font-display font-black text-2xl tracking-tighter uppercase italic text-white">Gymate</h1>
-        </button>
-
-        <div className="flex items-center gap-6 z-20">
-          <button onClick={onOpenSearch} className="text-white hover:text-primary transition-colors hidden sm:block">
-            <span className="material-symbols-outlined">search</span>
+          <button
+            className="lg:hidden text-white hover:text-[#FFD700] transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <span className="material-symbols-outlined text-3xl">
+              {isMobileMenuOpen ? "close" : "menu_open"}
+            </span>
           </button>
 
-          <button onClick={user ? onOpenProfile : () => handleNav('login')} className="text-white hover:text-primary transition-colors hidden sm:block relative group">
-            <span className="material-symbols-outlined">person</span>
-            {user && <span className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>}
+          <nav className="hidden lg:flex items-center gap-10">
+            <button onClick={() => handleNav("home")} className={navLinkStyle}>
+              Home
+            </button>
+            <button onClick={() => handleNav("shop")} className={navLinkStyle}>
+              Shop
+            </button>
+            <button onClick={() => handleNav("about")} className={navLinkStyle}>
+              Manifesto
+            </button>
+          </nav>
+        </div>
+
+        {/* CENTER SECTION: Logo (Hidden when searching on small screens) */}
+        <div
+          className={`flex-none transition-all duration-300 ${isSearchActive ? "hidden md:block opacity-20" : "opacity-100"}`}
+        >
+          <button
+            onClick={() => handleNav("home")}
+            className="flex items-center gap-2 group"
+          >
+            <span className="material-symbols-outlined text-[#FFD700] text-3xl group-hover:rotate-12 transition-transform duration-300">
+              fitness_center
+            </span>
+            <h1 className="font-display font-black text-3xl tracking-tighter uppercase italic text-white">
+              <span className="text-[#FFD700]">GYM</span>ATE
+            </h1>
           </button>
-          
-          <button onClick={() => handleNav('cart')} className="flex items-center gap-2 text-white hover:text-primary transition-colors group relative">
-            <span className="material-symbols-outlined">shopping_bag</span>
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-black">{cartCount}</span>
+        </div>
+
+        {/* RIGHT SECTION: Search Expansion & Actions */}
+        <div
+          className={`flex-1 flex items-center justify-end transition-all duration-500 ${isSearchActive ? "w-full" : "w-auto"}`}
+        >
+          {/* EXPANDING SEARCH BAR */}
+          <form
+            onSubmit={handleSearchSubmit}
+            className={`relative flex items-center transition-all duration-500 ease-in-out ${
+              isSearchActive ? "w-full md:max-w-md mr-4" : "w-10"
+            }`}
+          >
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="SEARCH ELITE GEAR..."
+              className={`w-full bg-[#111111] text-white text-xs font-bold tracking-widest uppercase transition-all duration-500 border-b ${
+                isSearchActive
+                  ? "opacity-100 py-2 px-10 border-[#FFD700]"
+                  : "opacity-0 p-0 border-transparent pointer-events-none"
+              } focus:outline-none`}
+            />
+
+            {/* Search Trigger/Submit Icon */}
+            <button
+              type="submit"
+              onClick={() => !isSearchActive && setIsSearchActive(true)}
+              className={`absolute left-0 w-10 h-10 flex items-center justify-center transition-colors ${
+                isSearchActive
+                  ? "text-[#FFD700]"
+                  : "text-white hover:text-[#FFD700]"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[22px]">
+                search
+              </span>
+            </button>
+
+            {/* Close Search Button */}
+            {isSearchActive && (
+              <button
+                type="submit"
+                onClick={() => {
+                  setIsSearchActive(false);
+                  setSearchQuery("");
+                }}
+                className="absolute right-0 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-white transition-colors"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
             )}
-          </button>
+          </form>
+
+          {/* OTHER ACTIONS (Hidden when search is fully expanded on mobile) */}
+          <div
+            className={`flex items-center gap-5 transition-all duration-300 ${isSearchActive ? "hidden sm:flex" : "flex"}`}
+          >
+            <button
+              onClick={user ? onOpenProfile : () => handleNav("login")}
+              className="w-10 h-10 flex items-center justify-center text-white hover:bg-white/5 rounded-full transition-all relative"
+            >
+              <span className="material-symbols-outlined text-[22px]">
+                person
+              </span>
+              {user && (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-[#FFD700] rounded-full shadow-[0_0_10px_#FFD700]"></span>
+              )}
+            </button>
+
+            <button
+              onClick={() => handleNav("cart")}
+              className="h-10 px-4 flex items-center gap-2 bg-[#FFD700] text-black rounded-sm hover:bg-white transition-all group overflow-hidden relative"
+            >
+              <span className="material-symbols-outlined text-[20px] font-bold">
+                shopping_cart
+              </span>
+              <span className="text-[11px] font-black uppercase tracking-widest hidden sm:block">
+                Cart
+              </span>
+              {cartCount > 0 && (
+                <span className="bg-black text-[#FFD700] text-[9px] font-bold h-5 w-5 flex items-center justify-center rounded-full ml-1">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className={`lg:hidden absolute top-20 left-0 right-0 bg-background-dark/95 backdrop-blur-xl border-b border-primary/20 transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <nav className="flex flex-col items-center py-6 gap-6">
-          <button onClick={() => handleNav('home')} className="text-lg font-bold uppercase tracking-widest text-white hover:text-primary transition-colors">Home</button>
-          <button onClick={() => handleNav('shop')} className="text-lg font-bold uppercase tracking-widest text-white hover:text-primary transition-colors">Shop</button>
-          <button onClick={() => handleNav('about')} className="text-lg font-bold uppercase tracking-widest text-white hover:text-primary transition-colors">About</button>
-          <div className="flex gap-8 mt-2">
-            <button onClick={() => { onOpenSearch(); setIsMobileMenuOpen(false); }} className="text-white hover:text-primary transition-colors">
-              <span className="material-symbols-outlined">search</span>
-            </button>
-            <button onClick={() => { setIsMobileMenuOpen(false); user ? onOpenProfile() : handleNav('login'); }} className="text-white hover:text-primary transition-colors">
-              <span className="material-symbols-outlined">person</span>
-            </button>
-          </div>
+      {/* MOBILE OVERLAY MENU (Unchanged) */}
+      <div
+        className={`lg:hidden fixed inset-x-0 top-[inherit] bg-black/98 backdrop-blur-2xl border-b border-[#FFD700]/20 transition-all duration-500 ease-in-out overflow-hidden ${
+          isMobileMenuOpen
+            ? "h-[40vh] opacity-100 shadow-[0_20px_50px_rgba(0,0,0,0.9)]"
+            : "h-0 opacity-0"
+        }`}
+      >
+        <nav className="flex flex-col items-center justify-center h-full gap-8">
+          <button
+            onClick={() => handleNav("home")}
+            className="text-2xl font-black uppercase italic text-white hover:text-[#FFD700]"
+          >
+            Home
+          </button>
+          <button
+            onClick={() => handleNav("shop")}
+            className="text-2xl font-black uppercase italic text-white hover:text-[#FFD700]"
+          >
+            Shop
+          </button>
+          <button
+            onClick={() => handleNav("about")}
+            className="text-2xl font-black uppercase italic text-white hover:text-[#FFD700]"
+          >
+            Manifesto
+          </button>
         </nav>
       </div>
     </header>
