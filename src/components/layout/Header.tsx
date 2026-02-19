@@ -29,15 +29,30 @@ export const Header: React.FC<HeaderProps> = ({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Lock body scroll when sidebar is open
   useEffect(() => {
     document.body.style.overflow = isMobileMenuOpen ? "hidden" : "unset";
   }, [isMobileMenuOpen]);
+
+  // Focus input when expanded
+  useEffect(() => {
+    if (isSearchActive) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchActive]);
 
   const handleNav = (page: string) => {
     onNavigate(page);
     setIsMobileMenuOpen(false);
     setIsSearchActive(false);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      onSearch(searchQuery);
+      setIsSearchActive(false);
+      setSearchQuery("");
+    }
   };
 
   const navLinkStyle =
@@ -53,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
         }`}
       >
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 h-full flex items-center">
-          {/* LEFT: Hamburger Trigger */}
+          {/* LEFT: Nav / Mobile Trigger */}
           <div className="flex-1 flex items-center justify-start">
             <button
               className={`lg:hidden text-white hover:text-[#FFD700] transition-all ${isSearchActive ? "hidden" : "block"}`}
@@ -86,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
             </nav>
           </div>
 
-          {/* CENTER: Logo */}
+          {/* CENTER: Logo (Hidden on mobile search to save space) */}
           <div
             className={`flex-none transition-all duration-500 flex justify-center ${
               isSearchActive
@@ -106,14 +121,10 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* RIGHT: Actions */}
+          {/* RIGHT: Actions & Search */}
           <div className="flex-1 flex items-center justify-end gap-2 md:gap-6">
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                onSearch(searchQuery);
-                setIsSearchActive(false);
-              }}
+              onSubmit={handleSearchSubmit}
               className={`relative flex items-center transition-all duration-500 ${isSearchActive ? "w-full md:max-w-md" : "w-12"}`}
             >
               <input
@@ -125,24 +136,40 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`w-full bg-[#111111] text-white text-xs font-bold tracking-widest uppercase transition-all duration-500 border-b italic ${
                   isSearchActive
                     ? "opacity-100 py-3 px-12 border-[#FFD700]"
-                    : "opacity-0 p-0 border-transparent"
+                    : "opacity-0 p-0 border-transparent pointer-events-none"
                 } focus:outline-none`}
               />
+
+              {/* MAGNIFYING GLASS: Toggle / Submit */}
               <button
-                type="button"
-                onClick={() =>
-                  !isSearchActive
-                    ? setIsSearchActive(true)
-                    : setIsSearchActive(false)
-                }
-                className={`absolute left-0 w-12 h-12 flex items-center justify-center ${isSearchActive ? "text-[#FFD700]" : "text-white"}`}
+                type={isSearchActive ? "submit" : "button"}
+                onClick={() => !isSearchActive && setIsSearchActive(true)}
+                className={`absolute left-0 w-12 h-12 flex items-center justify-center z-10 ${isSearchActive ? "text-[#FFD700]" : "text-white"}`}
               >
                 <span className="material-symbols-outlined text-[28px]">
                   search
                 </span>
               </button>
+
+              {/* CLOSE BUTTON: Collapses search (FIXED) */}
+              {isSearchActive && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsSearchActive(false);
+                    setSearchQuery("");
+                  }}
+                  className="absolute right-0 w-12 h-12 flex items-center justify-center text-gray-500 hover:text-white z-20"
+                >
+                  <span className="material-symbols-outlined text-2xl">
+                    close
+                  </span>
+                </button>
+              )}
             </form>
 
+            {/* PROFILE & CART (Hidden on mobile search) */}
             <div
               className={`flex items-center gap-4 transition-all ${isSearchActive ? "hidden md:flex" : "flex"}`}
             >
@@ -154,7 +181,7 @@ export const Header: React.FC<HeaderProps> = ({
                   person
                 </span>
                 {user && (
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#FFD700] rounded-full"></span>
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#FFD700] rounded-full shadow-[0_0_10px_#FFD700]"></span>
                 )}
               </button>
               <button
@@ -179,15 +206,13 @@ export const Header: React.FC<HeaderProps> = ({
       <div
         className={`fixed inset-0 z-[200] lg:hidden transition-all duration-500 ${isMobileMenuOpen ? "visible" : "invisible"}`}
       >
-        {/* Backdrop */}
         <div
           className={`absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-500 ${isMobileMenuOpen ? "opacity-100" : "opacity-0"}`}
           onClick={() => setIsMobileMenuOpen(false)}
         ></div>
 
-        {/* Sidebar Container */}
         <div
-          className={`absolute top-0 left-0 h-full w-[280px] bg-[#0A0A0A] border-r border-white/5 flex flex-col transition-transform duration-500 ease-expo ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
+          className={`absolute top-0 left-0 h-full w-[280px] bg-[#0A0A0A] border-r border-white/5 flex flex-col transition-transform duration-500 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
           <div className="p-8 border-b border-white/5 flex justify-between items-center">
             <img
@@ -233,7 +258,6 @@ export const Header: React.FC<HeaderProps> = ({
             ))}
           </nav>
 
-          {/* Sidebar Footer */}
           <div className="p-8 border-t border-white/5 space-y-4">
             <p className="text-[10px] text-gray-600 uppercase tracking-[0.3em] font-black">
               Elite Personnel Only

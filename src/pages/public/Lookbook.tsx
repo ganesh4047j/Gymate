@@ -5,7 +5,6 @@ interface LookbookProps {
 }
 
 export const Lookbook: React.FC<LookbookProps> = ({ onNavigate }) => {
-  // Curated high-performance imagery aligned with your 5 core products
   const lookbookItems = [
     {
       src: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=800",
@@ -40,77 +39,80 @@ export const Lookbook: React.FC<LookbookProps> = ({ onNavigate }) => {
   ];
 
   const sectionLabel =
-    "text-[#FFD700] text-[10px] font-black uppercase tracking-[0.4em] mb-4 block";
+    "text-[#FFD700] text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] mb-4 block";
 
   return (
-    <div className="bg-black min-h-screen pt-40 pb-20 px-8">
+    <div className="bg-black min-h-screen pt-24 md:pt-40 pb-20 px-4 md:px-8">
       <div className="max-w-[1440px] mx-auto">
-        {/* EDITORIAL HEADER */}
-        <div className="text-center mb-24 animate-fade-in">
+        {/* EDITORIAL HEADER: Responsive Typography */}
+        <div className="text-center mb-16 md:mb-24 animate-fade-in">
           <span className={sectionLabel}>Visual Manifest // 2026</span>
-          <h2 className="font-display font-black text-6xl md:text-8xl lg:text-9xl text-white uppercase italic tracking-tighter leading-[0.85] mb-8">
+          <h2 className="font-display font-black text-4xl sm:text-6xl md:text-8xl lg:text-9xl text-white uppercase italic tracking-tighter leading-[0.9] md:leading-[0.85] mb-6 md:mb-8">
             THE{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FFD700] to-[#B8860B]">
               ELITE
             </span>{" "}
-            <br /> COLLECTION
+            <br className="hidden sm:block" /> COLLECTION
           </h2>
-          <p className="text-gray-500 max-w-xl mx-auto text-xs uppercase tracking-[0.3em] leading-relaxed">
+          <p className="text-gray-500 max-w-xl mx-auto text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] leading-relaxed px-4">
             Visualizing dominance in every frame. See our engineered gear in the
             hands of the 1%.
           </p>
         </div>
 
-        {/* MASONRY GRID */}
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+        {/* MASONRY GRID: Optimized for Touch & Desktop */}
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 md:gap-8 space-y-4 md:space-y-8">
           {lookbookItems.map((item, idx) => (
             <div
               key={idx}
-              className="relative group overflow-hidden break-inside-avoid border border-white/5 bg-[#111111]"
+              className="relative group overflow-hidden break-inside-avoid border border-white/5 bg-[#111111] cursor-pointer"
             >
-              {/* IMAGE */}
+              {/* IMAGE: Lazy loaded for performance */}
               <img
                 src={item.src}
                 alt={item.title}
-                className="w-full grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
+                loading="lazy"
+                className="w-full grayscale sm:grayscale group-hover:grayscale-0 transition-all duration-700 md:duration-1000 group-hover:scale-105"
               />
 
-              {/* INTERACTIVE OVERLAY */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
-                {/* Content Animation */}
-                <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                  <span className="text-[#FFD700] text-[9px] font-black uppercase tracking-[0.4em] mb-2 block">
+              {/* INTERACTIVE OVERLAY: Mobile Friendly Tap Area */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-all duration-500 flex flex-col justify-end p-6 md:p-8">
+                <div className="translate-y-4 group-hover:translate-y-0 group-active:translate-y-0 transition-transform duration-500">
+                  <span className="text-[#FFD700] text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] mb-2 block">
                     {item.tag}
                   </span>
-                  <h3 className="text-white font-display font-black text-2xl uppercase italic tracking-tighter mb-6">
+                  <h3 className="text-white font-display font-black text-xl md:text-2xl uppercase italic tracking-tighter mb-4 md:mb-6">
                     {item.title}
                   </h3>
 
                   <button
-                    onClick={() => onNavigate("shop")}
-                    className="flex items-center gap-3 text-white text-[10px] font-black uppercase tracking-[0.2em] group/btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNavigate("shop");
+                    }}
+                    className="flex items-center gap-3 text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] group/btn"
                   >
-                    <span className="bg-[#FFD700] h-[1px] w-8 group-hover/btn:w-12 transition-all"></span>
+                    <span className="bg-[#FFD700] h-[1px] w-6 md:w-8 group-hover/btn:w-12 transition-all"></span>
                     Shop This Look
                   </button>
                 </div>
               </div>
 
-              {/* Decorative Corner (Only visible on hover) */}
-              <div className="absolute top-0 right-0 w-12 h-12 border-t border-r border-[#FFD700] opacity-0 group-hover:opacity-100 transition-opacity duration-700 m-4"></div>
+              {/* Decorative Corner: Hidden on very small screens for clarity */}
+              <div className="absolute top-0 right-0 w-8 h-8 md:w-12 md:h-12 border-t border-r border-[#FFD700] opacity-0 group-hover:opacity-100 transition-opacity duration-700 m-3 md:m-4"></div>
             </div>
           ))}
         </div>
 
-        {/* BOTTOM CTA */}
-        <div className="mt-32 text-center">
+        {/* BOTTOM CTA: Responsive Spacing */}
+        <div className="mt-20 md:mt-32 text-center">
           <div className="inline-flex flex-col items-center">
-            <p className="text-gray-600 text-[10px] uppercase tracking-[0.5em] mb-8">
+            <p className="text-gray-600 text-[9px] md:text-[10px] uppercase tracking-[0.5em] mb-6 md:mb-8">
               End of Collection
             </p>
             <button
               onClick={() => onNavigate("shop")}
-              className="bg-[#FFD700] text-black px-12 py-5 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-white transition-all transform hover:scale-105 active:scale-95 shadow-xl shadow-[#FFD700]/10"
+              className="bg-[#FFD700] text-black px-8 md:px-12 py-4 md:py-5 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] hover:bg-white transition-all transform hover:scale-105 active:scale-95 shadow-xl shadow-[#FFD700]/10"
             >
               Back To Performance Shop
             </button>
