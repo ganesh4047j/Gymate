@@ -6,227 +6,224 @@ interface RegisterProps {
   onNavigate: (page: string) => void;
 }
 
-export const Register: React.FC<RegisterProps> = ({ onLogin, onNavigate }) => {
+export const Register: React.FC<RegisterProps> = ({ onLogin }) => {
   const [formData, setFormData] = useState({
-    name: "",
+    full_name: "",
     email: "",
     mobile: "",
-    otp: "",
     password: "",
     confirmPassword: "",
-    newsletter: true,
+    accessToken: "",
   });
 
-  const [otpSent, setOtpSent] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [timer, setTimer] = useState(0);
+  const [isVerified, setIsVerified] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
 
-  // MSG91 Placeholder logic for SMS integration
-  const handleSendOTP = async () => {
+  // Load MSG91 script once
+  useEffect(() => {
+    if (!document.querySelector('script[src*="otp-provider.js"]')) {
+      const script = document.createElement("script");
+      script.src = "https://verify.msg91.com/otp-provider.js";
+      script.async = true;
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  // MSG91 Widget Config
+  const getMsg91Config = () => ({
+    widgetId: import.meta.env.VITE_MSG91_WIDGET_ID,
+    tokenAuth: import.meta.env.VITE_MSG91_AUTH_TOKEN,
+    identifier: `91${formData.mobile}`,
+    exposeMethods: false,
+
+    success: (data: any) => {
+      console.log("MSG91 FULL RESPONSE:", data);
+
+      if (data.type !== "success") {
+        setStatus("✕ Verification failed.");
+        return;
+      }
+
+      const token = data.message; // 🔥 THIS IS THE CORRECT FIELD
+
+      console.log("EXTRACTED TOKEN:", token);
+
+      if (!token) {
+        setStatus("Verification failed. Token missing.");
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        accessToken: token,
+      }));
+
+      setIsVerified(true);
+      setStatus("✓ Mobile number verified successfully");
+    },
+
+    failure: () => {
+      setStatus("✕ Verification failed. Try again.");
+    },
+  });
+
+  const handleSendOtp = () => {
     if (formData.mobile.length !== 10) {
-      alert("Please enter a valid 10-digit mobile number.");
+      alert("Enter valid 10-digit mobile number");
       return;
     }
 
-    // Integration Point: MSG91 API Call would go here
-    // Example: await fetch(`https://api.msg91.com/api/v5/otp?template_id=TEMPLATE_ID&mobile=${formData.mobile}&authkey=YOUR_AUTH_KEY`);
-
-    console.log(`MSG91: Sending OTP to ${formData.mobile}`);
-    setOtpSent(true);
-    setTimer(30); // 30 second cooldown for resend
+    if ((window as any).initSendOTP) {
+      (window as any).initSendOTP(getMsg91Config());
+    }
   };
 
-  useEffect(() => {
-    let interval: any;
-    if (timer > 0) {
-      interval = setInterval(() => setTimer((t) => t - 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [timer]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+
+    if (!isVerified) {
+      alert("Please verify your mobile number first.");
       return;
     }
-    // Final registration logic
-    onLogin({
-      name: formData.name,
-      username: formData.email,
+
+    if (!formData.accessToken) {
+      alert("OTP token missing. Please verify again.");
+      return;
+    }
+
+    if (formData.password.length < 10) {
+      alert("Password must be at least 10 characters.");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+
+    const payload = {
+      name: formData.full_name,
       email: formData.email,
-      role: "user",
-    });
+      mobile: formData.mobile,
+      password: formData.password,
+      otp: formData.accessToken,
+    };
+
+    console.log("FINAL REGISTER PAYLOAD:", payload);
+
+    try {
+      const response = await fetch("http://localhost:8000/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        onLogin(data);
+      } else {
+        alert(data.detail || "Registration failed");
+      }
+    } catch (error) {
+      alert("Server error occurred.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputStyle =
-    "w-full bg-[#111111] border border-white/10 rounded-sm p-3 text-white focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] focus:outline-none transition-all placeholder-gray-600 text-sm";
-  const labelStyle =
-    "block text-[10px] uppercase tracking-widest text-gray-500 mb-2 font-black";
+    "w-full bg-[#111111] border border-white/10 rounded-sm p-4 text-white focus:border-[#FFD700] outline-none text-sm font-bold transition-all";
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-xl mx-auto min-h-screen flex flex-col justify-center bg-black">
-      <div className="bg-[#0A0A0A] p-10 rounded-sm border border-[#FFD700]/20 shadow-[0_0_50px_rgba(255,215,0,0.05)]">
-        <div className="text-center mb-10">
-          <h2 className="font-display font-black text-4xl text-white uppercase italic tracking-tighter leading-none">
-            Join The <span className="text-[#FFD700]">Elite</span>
-          </h2>
-          <p className="text-gray-500 text-[10px] mt-3 uppercase tracking-[0.3em]">
-            Deploy your performance profile
-          </p>
-        </div>
+    <div className="pt-32 pb-20 px-6 max-w-xl mx-auto min-h-screen bg-black">
+      <div className="bg-[#0A0A0A] p-10 border border-[#FFD700]/20 shadow-2xl">
+        <h2 className="text-3xl text-white text-center mb-8">
+          Register Account
+        </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Unified Name Field */}
-          <div>
-            <label className={labelStyle}>Full Name</label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <input
+            type="text"
+            placeholder="Full Name"
+            required
+            className={inputStyle}
+            onChange={(e) =>
+              setFormData({ ...formData, full_name: e.target.value })
+            }
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            required
+            className={inputStyle}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+          />
+
+          <div className="flex gap-2">
             <input
-              type="text"
+              type="tel"
+              maxLength={10}
+              placeholder="Mobile Number"
               required
-              placeholder="E.G. JOHN DOE"
-              value={formData.name}
+              disabled={isVerified}
+              className={`${inputStyle} flex-grow`}
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setFormData({
+                  ...formData,
+                  mobile: e.target.value.replace(/\D/g, ""),
+                })
               }
-              className={inputStyle}
             />
-          </div>
-
-          <div>
-            <label className={labelStyle}>Email Address</label>
-            <input
-              type="email"
-              required
-              placeholder="NAME@EMAIL.COM"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              className={inputStyle}
-            />
-          </div>
-
-          {/* Phone & OTP Logic */}
-          <div className="space-y-4">
-            <div className="relative">
-              <label className={labelStyle}>Mobile Number</label>
-              <div className="flex gap-2">
-                <input
-                  type="tel"
-                  maxLength={10}
-                  required
-                  placeholder="10-DIGIT NUMBER"
-                  value={formData.mobile}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      mobile: e.target.value.replace(/\D/g, ""),
-                    })
-                  }
-                  className={`${inputStyle} flex-grow`}
-                />
-                <button
-                  type="button"
-                  disabled={formData.mobile.length !== 10 || timer > 0}
-                  onClick={handleSendOTP}
-                  className={`px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all ${
-                    timer > 0
-                      ? "bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed"
-                      : "bg-white text-black hover:bg-[#FFD700]"
-                  }`}
-                >
-                  {otpSent
-                    ? timer > 0
-                      ? `Retry in ${timer}s`
-                      : "Resend OTP"
-                    : "Send OTP"}
-                </button>
-              </div>
-            </div>
-
-            {/* Hidden until OTP is sent */}
-            {otpSent && (
-              <div className="animate-fade-in-up">
-                <label className={labelStyle}>
-                  Verification Code (4-Digits)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    maxLength={4}
-                    placeholder="X X X X"
-                    className={`${inputStyle} text-center tracking-[1em] text-lg font-black`}
-                    value={formData.otp}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        otp: e.target.value.replace(/\D/g, ""),
-                      })
-                    }
-                  />
-                  {formData.otp.length === 4 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsVerifying(true);
-                        setTimeout(() => setIsVerifying(false), 1500); // Mock verification delay
-                      }}
-                      className="bg-[#FFD700] text-black px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-white animate-pulse"
-                    >
-                      {isVerifying ? "Verifying..." : "Verify OTP"}
-                    </button>
-                  )}
-                </div>
-              </div>
+            {!isVerified && (
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                className="px-4 bg-[#FFD700] text-black font-bold"
+              >
+                Verify
+              </button>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/5">
-            <div>
-              <label className={labelStyle}>Password</label>
-              <input
-                type="password"
-                required
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className={inputStyle}
-              />
-            </div>
-            <div>
-              <label className={labelStyle}>Confirm</label>
-              <input
-                type="password"
-                required
-                placeholder="••••••••"
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
-                className={inputStyle}
-              />
-            </div>
-          </div>
+          {status && (
+            <p className="text-sm text-[#FFD700] font-bold">{status}</p>
+          )}
+
+          <input
+            type="password"
+            placeholder="Password"
+            required
+            className={inputStyle}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+          />
+
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            required
+            className={inputStyle}
+            onChange={(e) =>
+              setFormData({ ...formData, confirmPassword: e.target.value })
+            }
+          />
 
           <button
             type="submit"
-            className="w-full bg-[#FFD700] text-black font-black uppercase py-5 rounded-sm hover:bg-white transition-all shadow-xl shadow-[#FFD700]/10 text-xs tracking-[0.3em] mt-6"
+            disabled={!isVerified || loading}
+            className="w-full bg-[#FFD700] text-black py-4 font-bold disabled:opacity-30"
           >
-            Create Elite Account
+            {loading ? "Registering..." : "Create Account"}
           </button>
         </form>
-
-        <p className="text-center text-gray-600 text-[10px] mt-10 uppercase tracking-[0.3em]">
-          Already Operational?
-          <span
-            onClick={() => onNavigate("login")}
-            className="text-white font-black underline cursor-pointer hover:text-[#FFD700] ml-2 transition-colors"
-          >
-            Sign In
-          </span>
-        </p>
       </div>
     </div>
   );
