@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { User } from "../../types";
+import { StatusModal } from "../../components/shared/StatusModal";
 
 interface RegisterProps {
   onLogin: (user: User) => void;
   onNavigate: (page: string) => void;
 }
 
-export const Register: React.FC<RegisterProps> = ({ onLogin }) => {
+export const Register: React.FC<RegisterProps> = ({ onLogin, onNavigate }) => {
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -19,6 +20,13 @@ export const Register: React.FC<RegisterProps> = ({ onLogin }) => {
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: "success", title: "", message: "" });
 
   // Load MSG91 script once
   useEffect(() => {
@@ -70,7 +78,12 @@ export const Register: React.FC<RegisterProps> = ({ onLogin }) => {
 
   const handleSendOtp = () => {
     if (formData.mobile.length !== 10) {
-      alert("Enter valid 10-digit mobile number");
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Invalid Mobile",
+        message: "Enter valid 10-digit mobile number",
+      });
       return;
     }
 
@@ -83,22 +96,42 @@ export const Register: React.FC<RegisterProps> = ({ onLogin }) => {
     e.preventDefault();
 
     if (!isVerified) {
-      alert("Please verify your mobile number first.");
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Verification Required",
+        message: "Please verify your mobile number first.",
+      });
       return;
     }
 
     if (!formData.accessToken) {
-      alert("OTP token missing. Please verify again.");
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Token Missing",
+        message: "OTP token missing. Please verify again.",
+      });
       return;
     }
 
     if (formData.password.length < 10) {
-      alert("Password must be at least 10 characters.");
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Weak Password",
+        message: "Password must be at least 10 characters.",
+      });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Password Mismatch",
+        message: "Passwords do not match",
+      });
       return;
     }
 
@@ -124,24 +157,43 @@ export const Register: React.FC<RegisterProps> = ({ onLogin }) => {
       const data = await response.json();
 
       if (response.ok) {
-        onLogin(data);
+        setStatusModal({
+          isOpen: true,
+          type: "success",
+          title: "Registration Successful",
+          message: "Welcome to The Elite. Returning to login sequence.",
+        });
+
+        setTimeout(() => {
+          onNavigate("login");
+        }, 2000);
       } else {
-        alert(data.detail || "Registration failed");
+        setStatusModal({
+          isOpen: true,
+          type: "error",
+          title: "Registration Failed",
+          message: data.detail || "Strategic registration failure.",
+        });
       }
     } catch (error) {
-      alert("Server error occurred.");
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Network Error",
+        message: "Server Command Center is unreachable.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const inputStyle =
-    "w-full bg-[#111111] border border-white/10 rounded-sm p-4 text-white focus:border-[#FFD700] outline-none text-sm font-bold transition-all";
+    "w-full bg-[#111111] border border-white/10 rounded-sm p-3 sm:p-4 text-white focus:border-[#FFD700] outline-none text-xs sm:text-sm font-bold transition-all";
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-xl mx-auto min-h-screen bg-black">
-      <div className="bg-[#0A0A0A] p-10 border border-[#FFD700]/20 shadow-2xl">
-        <h2 className="text-3xl text-white text-center mb-8">
+    <div className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 max-w-[95%] sm:max-w-xl mx-auto min-h-screen bg-black">
+      <div className="bg-[#0A0A0A] p-6 sm:p-10 border border-[#FFD700]/20 shadow-2xl">
+        <h2 className="text-2xl sm:text-3xl text-white text-center mb-6 sm:mb-8 font-display italic uppercase tracking-tighter">
           Register Account
         </h2>
 
@@ -219,12 +271,20 @@ export const Register: React.FC<RegisterProps> = ({ onLogin }) => {
           <button
             type="submit"
             disabled={!isVerified || loading}
-            className="w-full bg-[#FFD700] text-black py-4 font-bold disabled:opacity-30"
+            className="w-full bg-[#FFD700] text-black py-4 font-bold disabled:opacity-30 uppercase tracking-widest text-xs sm:text-sm"
           >
             {loading ? "Registering..." : "Create Account"}
           </button>
         </form>
       </div>
+
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        type={statusModal.type}
+        title={statusModal.title}
+        message={statusModal.message}
+        onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+      />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { User } from "../../types";
+import { StatusModal } from "../../components/shared/StatusModal";
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -112,12 +113,29 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onNavigate }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: "success", title: "", message: "" });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      if (!formData.email || !formData.password) {
+        setStatusModal({
+          isOpen: true,
+          type: "error",
+          title: "Incomplete Credentials",
+          message: "Please enter both your email and password.",
+        });
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch("http://localhost:8000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -133,39 +151,55 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onNavigate }) => {
         // Securely store JWT for the session
         localStorage.setItem("elite_token", data.access_token);
 
-        // Update Global State with Backend-Verified User Profile
-        onLogin({
-          name: data.user.name,
-          username: data.user.email,
-          email: data.user.email,
-          role: data.user.role as "user" | "admin",
+        setStatusModal({
+          isOpen: true,
+          type: "success",
+          title: "Access Granted",
+          message: "Authorization successful. Deploying to home sequence.",
         });
 
-        // Optional: If Admin, push to Admin Panel
-        if (data.user.role === "admin") {
-          // onNavigate("admin-dashboard");
-        }
+        // Delay updating state to allow modal to show
+        setTimeout(() => {
+          // Update Global State with Backend-Verified User Profile
+          onLogin({
+            name: data.user.name,
+            username: data.user.email,
+            email: data.user.email,
+            role: data.user.role as "user" | "admin",
+          });
+          onNavigate("home");
+        }, 2000);
       } else {
-        alert(data.detail || "Strategic Authorization Failure.");
+        setStatusModal({
+          isOpen: true,
+          type: "error",
+          title: "Authorization Failure",
+          message: data.detail || "Strategic Authorization Failure.",
+        });
       }
     } catch (error) {
-      alert("Network Error: Backend Command Center is unreachable.");
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Network Error",
+        message: "Backend Command Center is unreachable.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const inputStyle =
-    "w-full bg-[#111111] border border-white/10 rounded-sm p-4 text-white focus:border-[#FFD700] outline-none transition-all placeholder-gray-600 text-sm font-bold";
+    "w-full bg-[#111111] border border-white/10 rounded-sm p-3 sm:p-4 text-white focus:border-[#FFD700] outline-none transition-all placeholder-gray-600 text-xs sm:text-sm font-bold";
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-lg mx-auto min-h-screen flex flex-col justify-center bg-black">
-      <div className="bg-[#0A0A0A] p-10 rounded-sm border border-[#FFD700]/20 shadow-[0_0_60px_rgba(255,215,0,0.03)]">
-        <div className="text-center mb-10">
-          <span className="material-symbols-outlined text-[#FFD700] text-4xl animate-pulse mb-4 block">
+    <div className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 max-w-[95%] sm:max-w-lg mx-auto min-h-screen flex flex-col justify-center bg-black">
+      <div className="bg-[#0A0A0A] p-6 sm:p-10 rounded-sm border border-[#FFD700]/20 shadow-[0_0_60px_rgba(255,215,0,0.03)]">
+        <div className="text-center mb-8 sm:mb-10">
+          <span className="material-symbols-outlined text-[#FFD700] text-3xl sm:text-4xl animate-pulse mb-3 sm:mb-4 block">
             lock_open
           </span>
-          <h2 className="font-display font-black text-4xl text-white uppercase italic tracking-tighter leading-none">
+          <h2 className="font-display font-black text-3xl sm:text-4xl text-white uppercase italic tracking-tighter leading-none">
             Welcome <span className="text-[#FFD700]">Back</span>
           </h2>
           <p className="text-gray-500 text-[10px] mt-4 uppercase tracking-[0.3em]">
@@ -249,6 +283,13 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onNavigate }) => {
       {isForgotModalOpen && (
         <ForgotPasswordModal onClose={() => setIsForgotModalOpen(false)} />
       )}
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        type={statusModal.type}
+        title={statusModal.title}
+        message={statusModal.message}
+        onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+      />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { StatusModal } from "../../components/shared/StatusModal";
 
 export const ResetPassword = ({
   onNavigate,
@@ -11,11 +12,22 @@ export const ResetPassword = ({
     email: "",
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: "success", title: "", message: "" });
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirm) {
-      alert("Strategic Error: Passwords do not match.");
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Mismatch",
+        message: "Strategic Error: Passwords do not match.",
+      });
       return;
     }
 
@@ -37,22 +49,32 @@ export const ResetPassword = ({
       if (response.ok) {
         setStatus("success");
       } else {
-        alert("Verification Error: Reset link may be expired.");
+        setStatusModal({
+          isOpen: true,
+          type: "error",
+          title: "Verification Error",
+          message: "Reset link may be expired or invalid.",
+        });
       }
     } catch (error) {
-      alert("Network Error: Command Center unreachable.");
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Network Error",
+        message: "Command Center unreachable.",
+      });
     } finally {
       setStatus("idle");
     }
   };
 
   const inputStyle =
-    "w-full bg-[#111111] border border-white/10 rounded-sm p-4 text-white focus:border-[#FFD700] outline-none text-sm font-bold";
+    "w-full bg-[#111111] border border-white/10 rounded-sm p-3 sm:p-4 text-white focus:border-[#FFD700] outline-none text-xs sm:text-sm font-bold transition-all";
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-lg mx-auto min-h-screen flex flex-col justify-center bg-black">
-      <div className="bg-[#0A0A0A] p-10 rounded-sm border border-[#FFD700]/20 shadow-2xl">
-        <h2 className="font-display font-black text-4xl text-white uppercase italic tracking-tighter mb-8 text-center">
+    <div className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 max-w-[95%] sm:max-w-lg mx-auto min-h-screen flex flex-col justify-center bg-black">
+      <div className="bg-[#0A0A0A] p-6 sm:p-10 rounded-sm border border-[#FFD700]/20 shadow-2xl">
+        <h2 className="font-display font-black text-3xl sm:text-4xl text-white uppercase italic tracking-tighter mb-6 sm:mb-8 text-center">
           Update <span className="text-[#FFD700]">Credentials</span>
         </h2>
 
@@ -110,6 +132,14 @@ export const ResetPassword = ({
           </form>
         )}
       </div>
+
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        type={statusModal.type}
+        title={statusModal.title}
+        message={statusModal.message}
+        onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+      />
     </div>
   );
 };

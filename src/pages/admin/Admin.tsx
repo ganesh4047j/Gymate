@@ -48,6 +48,7 @@ export const Admin: React.FC<AdminProps> = ({ user, onLogout }) => {
 
   const [usersList] = useState([
     {
+
       id: 1,
       name: "Mark S.",
       email: "mark@example.com",
@@ -125,8 +126,8 @@ export const Admin: React.FC<AdminProps> = ({ user, onLogout }) => {
       const discount =
         target.originalPrice > 0
           ? Math.round(
-              ((target.originalPrice - value) / target.originalPrice) * 100,
-            )
+            ((target.originalPrice - value) / target.originalPrice) * 100,
+          )
           : 0;
       setter({ ...target, price: value, offerPercentage: discount });
     } else {
@@ -207,11 +208,10 @@ export const Admin: React.FC<AdminProps> = ({ user, onLogout }) => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-3 px-8 py-3 rounded-sm font-black uppercase text-[10px] tracking-widest transition-all ${
-                activeTab === tab.id
+              className={`flex items-center gap-3 px-8 py-3 rounded-sm font-black uppercase text-[10px] tracking-widest transition-all ${activeTab === tab.id
                   ? "bg-[#FFD700] text-black shadow-lg shadow-[#FFD700]/10"
                   : "text-gray-500 hover:text-white hover:bg-white/5"
-              }`}
+                }`}
             >
               <span className="material-symbols-outlined text-lg">
                 {tab.icon}
@@ -459,11 +459,10 @@ export const Admin: React.FC<AdminProps> = ({ user, onLogout }) => {
                       </td>
                       <td className="p-4 text-center">
                         <span
-                          className={`px-3 py-1 text-[9px] font-black uppercase border ${
-                            o.status === "Delivered"
+                          className={`px-3 py-1 text-[9px] font-black uppercase border ${o.status === "Delivered"
                               ? "border-green-500/30 text-green-500"
                               : "border-yellow-500/30 text-yellow-500"
-                          }`}
+                            }`}
                         >
                           {o.status}
                         </span>
